@@ -1,0 +1,42 @@
+name: fallow mutation validation
+
+on:
+  pull_request:
+  pull_request_target:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  fallow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # pull_request_target checks out the PR head on purpose: this job
+          # tests that the action refuses mutation testing in that context.
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Fallow
+        id: fallow
+        uses: fallow-rs/fallow@feat/mutation-ci-surface
+        with:
+          comment: ${{ github.event_name == 'pull_request' }}
+          mutation: true
+          fail-on-issues: false
+          artifacts-dir: ${{ runner.temp }}/fallow
+      - name: Show outputs
+        if: always()
+        env:
+          OUTCOME: ${{ steps.fallow.outputs.mutation-outcome }}
+          COMPLETION: ${{ steps.fallow.outputs.mutation-completion }}
+          SCORE: ${{ steps.fallow.outputs.mutation-score }}
+          RESULTS: ${{ steps.fallow.outputs.mutation-results }}
+        run: printf 'outcome=%s completion=%s score=%s results=%s\n' "$OUTCOME" "$COMPLETION" "$SCORE" "$RESULTS"
