@@ -27,7 +27,6 @@ jobs:
           comment: true
           mutation: true
           fail-on-issues: false
-          artifacts-dir: ${{ runner.temp }}/fallow
       - name: Show outputs
         if: always()
         env:
