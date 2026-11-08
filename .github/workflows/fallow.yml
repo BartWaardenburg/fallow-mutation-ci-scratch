@@ -26,6 +26,8 @@ jobs:
         with:
           comment: true
           mutation: true
+          mutation-scope: ${{ github.event_name == 'workflow_dispatch' && 'all' || 'changed' }}
+          mutation-max-mutants: ${{ github.event_name == 'workflow_dispatch' && '25' || '' }}
           fail-on-issues: false
       - name: Show outputs
         if: always()
