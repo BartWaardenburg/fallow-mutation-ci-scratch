@@ -3,7 +3,6 @@ name: fallow mutation validation
 on:
   pull_request:
   workflow_dispatch:
-  pull_request_target:
 
 permissions:
   contents: read
