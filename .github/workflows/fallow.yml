@@ -22,10 +22,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Fallow
         id: fallow
-        uses: fallow-rs/fallow@feat/mutation-ci-surface
+        uses: fallow-rs/fallow@feat/mutation-ci-native
         with:
           comment: true
           mutation: true
+          mutation-min-score: '90'
           mutation-scope: ${{ github.event_name == 'workflow_dispatch' && 'all' || 'changed' }}
           mutation-max-mutants: ${{ github.event_name == 'workflow_dispatch' && '25' || '' }}
           fail-on-issues: false
