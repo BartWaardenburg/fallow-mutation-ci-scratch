@@ -1,1 +1,5 @@
-{"command": "security", "mutation": false}
+{
+  "command": "security",
+  "mutation": false,
+  "fallow_ref": "fix/action-pr-surfaces"
+}
