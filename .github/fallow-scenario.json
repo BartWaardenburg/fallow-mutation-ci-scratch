@@ -1,1 +1,6 @@
-{"command": "audit", "gate": "new-only", "mutation": false}
+{
+  "command": "audit",
+  "gate": "new-only",
+  "mutation": false,
+  "fallow_ref": "fix/action-pr-surfaces"
+}

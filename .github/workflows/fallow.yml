@@ -62,14 +62,14 @@ jobs:
         run: |
           if [ ! -x "$RUNNER_TEMP/fallow-bin/fallow" ]; then
             cd "$RUNNER_TEMP/fallow-src"
-            cargo build --release -p fallow-cli --bin fallow
+            cargo build -p fallow-cli --bin fallow
             mkdir -p "$RUNNER_TEMP/fallow-bin"
-            cp target/release/fallow "$RUNNER_TEMP/fallow-bin/"
+            cp target/debug/fallow "$RUNNER_TEMP/fallow-bin/"
           fi
           echo "$RUNNER_TEMP/fallow-bin" >> "$GITHUB_PATH"
       - name: Fallow
         id: fallow
-        uses: fallow-rs/fallow@v3
+        uses: fallow-rs/fallow@fix/action-pr-surfaces
         with:
           command: ${{ steps.cfg.outputs.command }}
           root: ${{ steps.cfg.outputs.root }}
