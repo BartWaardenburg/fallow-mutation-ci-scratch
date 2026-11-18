@@ -1,1 +1,5 @@
-{"fail_on_issues": true, "mutation_min_score": 90}
+{
+  "fail_on_issues": true,
+  "mutation_min_score": 90,
+  "fallow_ref": "fix/action-pr-surfaces"
+}
