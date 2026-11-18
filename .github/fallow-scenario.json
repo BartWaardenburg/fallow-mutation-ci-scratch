@@ -1,3 +1,4 @@
 {
-  "fallow_ref": "fix/action-pr-surfaces"
+  "fallow_ref": "fix/action-pr-surfaces",
+  "mutation": false
 }
