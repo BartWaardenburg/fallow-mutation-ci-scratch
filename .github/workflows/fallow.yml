@@ -21,7 +21,7 @@ jobs:
         run: |
           f=.github/fallow-scenario.json
           [ -f "$f" ] || echo '{}' > "$f"
-          get() { jq -r --arg k "$1" --arg d "$2" '.[$k] // $d | tostring' "$f"; }
+          get() { jq -r --arg k "$1" --arg d "$2" 'if has($k) then .[$k] else $d end | tostring' "$f"; }
           {
             echo "fallow_ref=$(get fallow_ref '')"
             echo "command=$(get command '')"
