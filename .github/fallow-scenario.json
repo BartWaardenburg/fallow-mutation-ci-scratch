@@ -1,4 +1,1 @@
-{
-  "review_comments": true,
-  "fallow_ref": "fix/action-pr-surfaces"
-}
+{"review_comments": true, "mutation": false, "fallow_ref": "fix/action-pr-surfaces"}
