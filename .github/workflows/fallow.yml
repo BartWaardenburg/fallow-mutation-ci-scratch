@@ -22,7 +22,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Fallow
         id: fallow
-        uses: fallow-rs/fallow@feat/mutation-ci-surface
+        uses: fallow-rs/fallow@v3
         with:
           comment: true
           mutation: true
