@@ -1,4 +1,4 @@
-import { parseURL, stringifyParsedURL } from "./parse";
+import { parsePath, parseURL, stringifyParsedURL } from "./parse";
 import { QueryObject, parseQuery, stringifyQuery, ParsedQuery } from "./query";
 import {
   decode,
@@ -770,4 +770,20 @@ export function withoutFragment(input: string): string {
 export function withoutHost(input: string) {
   const parsed = parseURL(input);
   return (parsed.pathname || "/") + parsed.search + parsed.hash;
+}
+
+/**
+ * Returns `true` when the path of the input has more segments than the limit.
+ *
+ * @example
+ * ```js
+ * hasTooManySegments("/a/b/c", 2); // true
+ * hasTooManySegments("/a/b", 2); // false
+ * ```
+ *
+ * @group utils
+ */
+export function hasTooManySegments(input = "", limit = 32): boolean {
+  const segments = parsePath(input).pathname.split("/").filter(Boolean);
+  return segments.length > limit;
 }
