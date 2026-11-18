@@ -28,7 +28,7 @@ export function classifyPort(input: string | number | undefined, strict: boolean
         return "registered-even";
       }
     }
-    return "registered";
+    return "registered-port";
   }
   return fallback && fallback > port ? "dynamic-fallback" : "dynamic";
 }
