@@ -14,26 +14,77 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read scenario
+        id: cfg
+        run: |
+          f=.github/fallow-scenario.json
+          [ -f "$f" ] || echo '{}' > "$f"
+          get() { jq -r --arg k "$1" --arg d "$2" '.[$k] // $d | tostring' "$f"; }
+          {
+            echo "fallow_ref=$(get fallow_ref '')"
+            echo "command=$(get command '')"
+            echo "root=$(get root '.')"
+            echo "comment_layout=$(get comment_layout default)"
+            echo "summary_scope=$(get summary_scope all)"
+            echo "diff_filter=$(get diff_filter added)"
+            echo "review_comments=$(get review_comments false)"
+            echo "mutation=$(get mutation true)"
+            echo "mutation_min_score=$(get mutation_min_score '')"
+            echo "fail_on_issues=$(get fail_on_issues false)"
+            echo "baseline=$(get baseline '')"
+            echo "gate=$(get gate '')"
+            echo "max_comments=$(get max_comments 50)"
+            echo "score=$(get score false)"
+          } >> "$GITHUB_OUTPUT"
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Check out the fallow branch
+        if: steps.cfg.outputs.fallow_ref != ''
+        env:
+          FALLOW_REF: ${{ steps.cfg.outputs.fallow_ref }}
+        run: |
+          git clone --depth 1 --branch "$FALLOW_REF" https://github.com/fallow-rs/fallow.git "$RUNNER_TEMP/fallow-src"
+          echo "FALLOW_SRC_SHA=$(git -C "$RUNNER_TEMP/fallow-src" rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Cache the fallow build
+        if: steps.cfg.outputs.fallow_ref != ''
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/fallow-bin
+          key: fallow-bin-${{ env.FALLOW_SRC_SHA }}
+      - name: Compile fallow
+        if: steps.cfg.outputs.fallow_ref != ''
+        run: |
+          if [ ! -x "$RUNNER_TEMP/fallow-bin/fallow" ]; then
+            cd "$RUNNER_TEMP/fallow-src"
+            cargo build --release -p fallow-cli --bin fallow
+            mkdir -p "$RUNNER_TEMP/fallow-bin"
+            cp target/release/fallow "$RUNNER_TEMP/fallow-bin/"
+          fi
+          echo "$RUNNER_TEMP/fallow-bin" >> "$GITHUB_PATH"
       - name: Fallow
         id: fallow
-        uses: fallow-rs/fallow@feat/mutation-ci-surface
+        uses: fallow-rs/fallow@v3
         with:
+          command: ${{ steps.cfg.outputs.command }}
+          root: ${{ steps.cfg.outputs.root }}
           comment: true
-          mutation: true
-          mutation-scope: ${{ github.event_name == 'workflow_dispatch' && 'all' || 'changed' }}
-          mutation-max-mutants: ${{ github.event_name == 'workflow_dispatch' && '25' || '' }}
-          fail-on-issues: false
-      - name: Show outputs
+          comment-layout: ${{ steps.cfg.outputs.comment_layout }}
+          summary-scope: ${{ steps.cfg.outputs.summary_scope }}
+          diff-filter: ${{ steps.cfg.outputs.diff_filter }}
+          review-comments: ${{ steps.cfg.outputs.review_comments }}
+          mutation: ${{ steps.cfg.outputs.mutation }}
+          mutation-min-score: ${{ steps.cfg.outputs.mutation_min_score }}
+          fail-on-issues: ${{ steps.cfg.outputs.fail_on_issues }}
+          baseline: ${{ steps.cfg.outputs.baseline }}
+          gate: ${{ steps.cfg.outputs.gate }}
+          max-comments: ${{ steps.cfg.outputs.max_comments }}
+          score: ${{ steps.cfg.outputs.score }}
+      - name: Show the fallow version
         if: always()
-        env:
-          OUTCOME: ${{ steps.fallow.outputs.mutation-outcome }}
-          COMPLETION: ${{ steps.fallow.outputs.mutation-completion }}
-          SCORE: ${{ steps.fallow.outputs.mutation-score }}
-          RESULTS: ${{ steps.fallow.outputs.mutation-results }}
-        run: printf 'outcome=%s completion=%s score=%s results=%s\n' "$OUTCOME" "$COMPLETION" "$SCORE" "$RESULTS"
+        run: fallow --version
