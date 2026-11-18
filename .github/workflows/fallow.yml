@@ -69,7 +69,7 @@ jobs:
           echo "$RUNNER_TEMP/fallow-bin" >> "$GITHUB_PATH"
       - name: Fallow
         id: fallow
-        uses: fallow-rs/fallow@fix/action-pr-surfaces
+        uses: fallow-rs/fallow@fix/pr-comment-verdict-heading
         with:
           command: ${{ steps.cfg.outputs.command }}
           root: ${{ steps.cfg.outputs.root }}
